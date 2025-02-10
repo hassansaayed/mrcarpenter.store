@@ -5,3 +5,7 @@ app = Flask(__name__)
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
+
+@app.route("/hello")
+def hello():
+    return "There aren't the tokens your're looking for"
