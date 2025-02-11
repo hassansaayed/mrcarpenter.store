@@ -1,28 +1,69 @@
-from flask import Flask, request, render_template_string
+SECRET_KEY = "hardcoded-secret"
+DATABASE_URL = "mysql://admin:password@localhost:3306/mydb"
+
+import requests
+import os
+import sqlite3
+from flask import Flask, request
 
 app = Flask(__name__)
 
-comments = []
+# Database for testing SQLI
+conn = sqlite3.connect("test.db")
+cursor = conn.cursor()
+cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)")
+cursor.execute("INSERT INTO users (username, password) VALUES ('admin', 'password123')")
+conn.commit()
+conn.close()
 
-@app.route("/")
-def home():
-    return """
-    <h2>Comment Section</h2>
-    <form action='/comment' method='POST'>
-        <input type='text' name='comment' placeholder='Enter your comment' required>
-        <button type='submit'>Submit</button>
-    </form>
-    <h3>Previous Comments:</h3>
-    <ul>
-        """ + "".join(f"<li>{c}</li>" for c in comments) + """
-    </ul>
-    """
+# Landing Page
+@app.route("/", methods=["GET"])
+def xss_vuln():
+    return f"<h1>Vulnerable Web App</h1>"
 
-@app.route("/comment", methods=["POST"])
-def comment():
-    user_comment = request.form.get("comment")
-    comments.append(user_comment)
-    return render_template_string(home())
+# XSS
+@app.route("/xss", methods=["GET", "POST"])
+def xss_vuln():
+    user_input = request.args.get("input", "")
+    return f"<h1>User Input: {user_input}</h1>"
+
+# SSRF
+@app.route("/fetch-url")
+def fetch_url():
+    url = request.args.get("url")
+    response = requests.get(url)
+    return response.text
+
+# IDOR
+@app.route("/profile/<user_id>")
+def profile(user_id):
+    return f"<h1>Welcome, User {user_id}!</h1>"
+
+# RCE
+@app.route("/commandexec")
+def command():
+    command = request.args.get("command")
+    response = os.popen(f"{command}").read()
+    return response
+
+# SQLI
+@app.route("/login", methods=["GET"])
+def login():
+    username = request.args.get("username")
+    password = request.args.get("password")
+    
+    conn = sqlite3.connect("test.db")
+    cursor = conn.cursor()
+    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+    cursor.execute(query)
+    user = cursor.fetchone()
+    conn.close()
+
+    if user:
+        return "Login Successful!"
+    else:
+        return "Invalid Credentials"
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    app.run(debug=True)
