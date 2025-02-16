@@ -1,25 +1,22 @@
-SECRET_KEY = "hardcoded-secret"
-DATABASE_URL = "mysql://admin:password@localhost:3306/mydb"
-
 import requests
 import os
-import sqlite3
+import psycopg2
 from flask import Flask, request
 
 app = Flask(__name__)
 
-# Database for testing SQLI
-conn = sqlite3.connect("test.db")
-cursor = conn.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)")
-cursor.execute("INSERT INTO users (username, password) VALUES ('admin', 'password123')")
-conn.commit()
-conn.close()
+# Load secret key & database URL from environment variables
+SECRET_KEY = os.getenv("SECRET_KEY", "hardcoded-secret")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:password@localhost:5432/mydb")
+
+# Connect to PostgreSQL (Render)
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL)
 
 # Landing Page
 @app.route("/", methods=["GET"])
-def xss_vuln():
-    return f"<h1>Vulnerable Web App</h1>"
+def index():
+    return "<h1>Vulnerable Web App</h1>"
 
 # XSS
 @app.route("/xss", methods=["GET", "POST"])
@@ -39,20 +36,13 @@ def fetch_url():
 def profile(user_id):
     return f"<h1>Welcome, User {user_id}!</h1>"
 
-# RCE
-@app.route("/commandexec")
-def command():
-    command = request.args.get("command")
-    response = os.popen(f"{command}").read()
-    return response
-
 # SQLI
 @app.route("/login", methods=["GET"])
 def login():
     username = request.args.get("username")
     password = request.args.get("password")
-    
-    conn = sqlite3.connect("test.db")
+
+    conn = get_db_connection()
     cursor = conn.cursor()
     query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
     cursor.execute(query)
@@ -63,7 +53,6 @@ def login():
         return "Login Successful!"
     else:
         return "Invalid Credentials"
-
 
 if __name__ == "__main__":
     app.run(debug=True)
