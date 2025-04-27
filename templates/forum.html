@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Forum</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h2>Forum</h2>
+
+    <form method="POST">
+        <textarea name="content" placeholder="Share something..." required></textarea><br><br>
+        <button type="submit">Post</button>
+    </form>
+
+    <h3>All Comments:</h3>
+    {% for comment in comments %}
+        <div style="border: 1px solid #ccc; margin-bottom: 10px; padding: 10px;">
+            <p>{{ comment.content }}</p> <!-- Just display the content of the comment -->
+        </div>
+    {% endfor %}
+
+    <br><br>
+    <a href="/logout">Logout</a>
+</body>
+</html>

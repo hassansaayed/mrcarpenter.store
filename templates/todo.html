@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h2>To-Do List</h2>
+
+    <form method="POST">
+        <textarea name="content" placeholder="Enter a new task..." required></textarea><br><br>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <h3>Your Tasks:</h3>
+    {% for task in tasks %}
+        <div style="border: 1px solid #ccc; margin-bottom: 10px; padding: 10px;">
+            <p>{{ task.content }}</p>
+            <a href="/todo/delete/{{ task.id }}">Delete Task</a> <!-- The delete link -->
+        </div>
+    {% endfor %}
+
+    <br><br>
+    <a href="/logout">Logout</a>
+</body>
+</html>
