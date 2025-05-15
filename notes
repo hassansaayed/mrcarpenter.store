@@ -1,0 +1,24 @@
+py -m venv venv 
+cd /venv/Scripts/activate
+
+pip install flask flask-login flask-wtf flask-sqlalchemy email-validator
+pip install Flask-Limiter
+
+pip install gunicorn
+
+
+
+
+
+
+
+hassansd123@gmail.com
+hassansd
+test123
+test123
+
+noursd120@gmail.com
+nuran.theartist
+nour123
+nour123
+
