@@ -7,14 +7,17 @@ from flask_limiter.util import get_remote_address
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import os
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://quicklinks_db_user:BlqLOpfSIcZHXaqW7KBlgkVEncObLRGw@dpg-d0jhmrm3jp1c739uot30-a.oregon-postgres.render.com/quicklinks_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -170,4 +173,4 @@ with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
