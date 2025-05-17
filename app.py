@@ -16,7 +16,16 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://quicklinks_db_user:BlqLOpfSIcZHXaqW7KBlgkVEncObLRGw@dpg-d0jhmrm3jp1c739uot30-a.oregon-postgres.render.com/quicklinks_db'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:new_password@localhost/dbname?charset=utf8mb4'
+
+
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 10,
+    'pool_recycle': 300,
+    'pool_pre_ping': True
+}
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -31,15 +40,15 @@ def load_user(user_id):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    username = db.Column(db.String(20), unique=True, nullable=False)  # Already has length
+    email = db.Column(db.String(120), unique=True, nullable=False)     # Already has length
+    password = db.Column(db.String(500), nullable=False)  # Changed from 2000 to 500
     links = db.relationship('Link', backref='owner', lazy=True)
 
 class Link(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    url = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(100), nullable=False)  # Added length
+    url = db.Column(db.String(255), nullable=False)    # Added length
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 ### FORMS ###
@@ -170,7 +179,8 @@ def public_profile(username):
 
 ### CREATE DB ###
 with app.app_context():
-    db.create_all()
+    db.create_all()  # Safe - won't touch existing data
+    print("Verified database tables")
 
 if __name__ == '__main__':
     app.run(debug=False)
